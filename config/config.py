@@ -1,5 +1,4 @@
 from pydantic_settings import BaseSettings
-
 from src.utils.aws_utils import SecretManagerUtils
 
 class PathSettings:
