@@ -1,13 +1,12 @@
+import json
 import boto3
-from config.config import S3Settings
 
 class S3Utils:
     def __init__(self):
-        self.s3_resource = boto3.resource('s3', aws_access_key_id=S3Settings().ACCESS_KEY,
-    aws_secret_access_key=S3Settings().SECRET_KEY)
-        self.s3_client = boto3.client('s3', aws_access_key_id=S3Settings().ACCESS_KEY,
-    aws_secret_access_key=S3Settings().SECRET_KEY)
-        self.bucket = S3Settings().bucket_name
+        s3_secret = SecretManagerUtils.get_secret(secret_name='employee-recognition-s3-secrets',region_name='us-east-2')
+        self.s3_resource = boto3.resource('s3')
+        self.s3_client = boto3.client('s3')
+        self.bucket = s3_secret.get('bucket_name')
 
     def upload_file_obj(self,folder_name, emp_name, image_string):
         file_path = f'{folder_name}/{emp_name.lower()}.jpg'
@@ -23,3 +22,12 @@ class S3Utils:
         copy_source = {'Bucket': self.bucket, 'Key': file_path}
         self.s3_client.copy_object(CopySource=copy_source, Bucket=self.bucket, Key=new_file_path)
         self.s3_client.delete_object(Bucket=self.bucket, Key=file_path)
+
+
+class SecretManagerUtils:
+    def get_secret(secret_name, region_name):
+        secret_client = boto3.client(service_name='secretsmanager', region_name=region_name)
+        get_secret_value_response = secret_client.get_secret_value(
+            SecretId=secret_name
+        )
+        return json.loads(get_secret_value_response.get('SecretString'))
