@@ -7,3 +7,6 @@ class NoFaceDetectedException(Exception):
 
 class NoFaceMatchedException(Exception):
     pass
+
+class KeyCloakUserCreationError(Exception):
+    pass

@@ -1,4 +1,5 @@
 from datetime import datetime
+from pickle import TRUE
 from typing import Any
 
 from sqlalchemy import String, Column, DateTime, Integer, Boolean, Enum, Text, ForeignKey
@@ -8,6 +9,7 @@ from sqlalchemy.orm import relationship
 from database.database import Base
 from src.api.v1.user_authentication.schemas.user_schemas import RoleChoices
 from src.api.v1.user_authentication.utils.hash_utils import Hasher
+from src.utils.custom_exception import KeyCloakUserCreationError
 
 
 class User(Base):
@@ -21,12 +23,24 @@ class User(Base):
     is_admin_access = Column(Boolean, default=False, nullable=False)
     disabled = Column(Boolean, default=False, nullable=False)
     role = Column(Enum(RoleChoices), default=RoleChoices.Employee, nullable=False)
+    first_name = Column(String(length=20))
+    last_name = Column(String(length=20))
+    phone_number = Column(String(length=20))
+    keycloak_id = Column(String(), nullable=False)
+
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.user_name = kwargs.get("user_name")
         self.email = kwargs.get("email")
         self.password = Hasher.hash_password(kwargs.get("password"))
         self.role = kwargs.get('role')
+        self.keycloak_id = kwargs.get('keycloak_id')
+        self.first_name = kwargs.get('first_name')
+        self.last_name = kwargs.get('last_name')
+        self.phone_number = kwargs.get('phone_number')
+
+        if self.keycloak_id is None:
+            raise KeyCloakUserCreationError("It might be possible that user is not created successfully in KeyCloak.")
 
     @classmethod
     def save(cls, db_session, data):
@@ -56,6 +70,12 @@ class User(Base):
     @classmethod
     def get_user_by_user_id(cls, db_session: Any, user_id: int):
         return db_session.query(cls).filter(cls.user_id == user_id).first()
+    
+    @classmethod
+    def update_user_by_user_id(cls, db_session:Any, user_id:int, update_kwargs):
+        db_session.query(cls).filter(cls.user_id == user_id).update(update_kwargs)
+        db_session.commit()
+        return True
 
     def __repr__(self) -> str:
         return f"<User {self.user_id}>"

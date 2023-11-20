@@ -43,5 +43,11 @@ def active_user_is_admin(current_user: UserResponseSchema = Depends(get_current_
         raise HTTPException(status_code=400, detail="Inactive user")
     if current_user.role not in {RoleChoices.Admin, RoleChoices.SuperAdmin}:
         raise HTTPException(status_code=400, detail=f"You are not authorised to perform this action. {current_user.email} has not permissions for this tasks.")
-    return current_user                         
-    
+    return current_user
+
+def verify_user_details_for_access(current_user, user_id):
+    if current_user.role in {RoleChoices.Admin, RoleChoices.SuperAdmin}:
+        return current_user
+    if current_user.role in {RoleChoices.Employee} and current_user.user_id == user_id:
+        return current_user
+    raise HTTPException(status_code=400, detail=f"You are not authorised to perform this action. {current_user.email} has not permissions for this tasks.")

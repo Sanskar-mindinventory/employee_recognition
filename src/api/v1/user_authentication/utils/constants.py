@@ -18,6 +18,8 @@ ERR_INVALID_TOKEN = "Invalid Token"
 SOMETHING_WENT_WRONG = "Oops! Something went wrong."
 INVALID_CREDENTIALS = "Invalid credentials"
 SUCCESS_EXECUTED = "Test API is working Fine. Current User : {user_name}"
+MSG_USER_LOGIN_SUCCESSFUL = "User logged in Successfully."
+USER_DATA_UPDATED_SUCCESSFULLY = "User data is updated successfully."
 
 # video upload
 INVALID_FILE_TYPE = 'Uploaded file is invalid. Please upload valid video file only.'
